@@ -331,6 +331,11 @@ Sahaas was built during a **5-hour hackathon** to solve the real problem of dela
 | Role | Name |
 |---|---|
 | Developer | Aayush |
+| Developer | Aashish |
+| Developer | Sabbir |
+| Developer | Rudraksh |
+| Developer | Shreyas |
+| Developer | Darishma |
 
 ---
 
