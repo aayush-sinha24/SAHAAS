@@ -15,7 +15,7 @@
 
 <br/>
 
-**SIH 2026 • PS: SIH26206 • Student Innovation • Software**
+**SIH 2026 • PS: SIH26202 • Student Innovation • Software**
 
 **Team ID:** `180076` &nbsp; **Team:** `TEAM_LOGIX`
 
