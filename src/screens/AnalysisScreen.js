@@ -5,19 +5,19 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, STRINGS } from '../constants';
-import { analyzeIncident } from '../services/geminiService';
+import { analyzeIncident } from '../services/soteService';
 import { generateFIR } from '../services/firService';
 import ParticleBackground from '../components/ParticleBackground';
 
 const { width } = Dimensions.get('window');
 
-const STEPS = [
-    { icon: 'videocam',         label: 'Processing geo-tagged video...',   duration: 1800, color: '#CC0000' },
-    { icon: 'location',         label: 'Extracting GPS coordinates...',     duration: 1400, color: '#FF9F43' },
-    { icon: 'time',             label: 'Verifying timestamp & evidence...', duration: 1200, color: '#4E67EB' },
-    { icon: 'analytics',        label: 'Running AI incident analysis...',   duration: 2500, color: '#7C4DFF' },
-    { icon: 'document-text',    label: 'Generating FIR document...',        duration: 1500, color: '#FF6B6B' },
-    { icon: 'shield-checkmark', label: 'Finalising report...',              duration: 800,  color: '#00C853' },
+const getSteps = (t) => [
+    { icon: 'videocam',         label: t.stepProcessing || 'Processing geo-tagged video...',       duration: 1800, color: '#CC0000' },
+    { icon: 'location',         label: t.stepGPS        || 'Extracting GPS coordinates...',          duration: 1400, color: '#FF9F43' },
+    { icon: 'time',             label: t.stepTimestamp  || 'Verifying timestamp & evidence...',      duration: 1200, color: '#4E67EB' },
+    { icon: 'analytics',        label: t.stepSoteAI     || 'Running SOTE AI incident analysis...',   duration: 2500, color: '#7C4DFF' },
+    { icon: 'document-text',    label: t.stepFIR        || 'Generating FIR document...',             duration: 1500, color: '#FF6B6B' },
+    { icon: 'shield-checkmark', label: t.stepFinalise   || 'Finalising report...',                   duration: 800,  color: '#00C853' },
 ];
 
 // Animated step dot
@@ -55,6 +55,7 @@ function StepDot({ step, isCompleted, isCurrent, isDone }) {
 export default function AnalysisScreen({ navigation, route }) {
     const { language, videoUri, videoUrl, location, timestamp, answers, platePhotoUri } = route.params || {};
     const t = STRINGS[language] || STRINGS.en;
+    const STEPS = getSteps(t);
 
     const [currentStep, setCurrentStep] = useState(0);
     const [done, setDone] = useState(false);
@@ -125,8 +126,9 @@ export default function AnalysisScreen({ navigation, route }) {
         });
 
         try {
-            const aiData = await analyzeIncident({ imageBase64: null, location, timestamp, answers });
-            const fir = generateFIR(aiData, location, timestamp, answers, videoUri, videoUrl, platePhotoUri);
+            const aiData = await analyzeIncident({ imageBase64: null, location, timestamp, answers, videoUrl });
+            // Pass language so firService and pdfService can localise the PDF
+            const fir = generateFIR(aiData, location, timestamp, answers, videoUri, videoUrl, platePhotoUri, language);
             setTimeout(() => {
                 setDone(true);
                 setTimeout(() => navigation.navigate('FIR', { language, fir }), 900);
@@ -134,7 +136,7 @@ export default function AnalysisScreen({ navigation, route }) {
         } catch (e) {
             console.error('Analysis error:', e);
             setError('Analysis completed with limited data');
-            const fir = generateFIR({}, location, timestamp, answers, videoUri, videoUrl, platePhotoUri);
+            const fir = generateFIR({}, location, timestamp, answers, videoUri, videoUrl, platePhotoUri, language);
             setTimeout(() => navigation.navigate('FIR', { language, fir }), 3000);
         }
 
@@ -143,6 +145,7 @@ export default function AnalysisScreen({ navigation, route }) {
     const rotate = rotateAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
     const progressWidth = progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
     const currentColor = done ? COLORS.success : (STEPS[currentStep]?.color || COLORS.primary);
+
 
     return (
         <View style={styles.container}>
@@ -251,7 +254,7 @@ export default function AnalysisScreen({ navigation, route }) {
                 {/* ── AI Badge ── */}
                 <View style={styles.aiBadge}>
                     <MaterialCommunityIcons name="brain" size={13} color="#CCCCCC" />
-                    <Text style={styles.aiBadgeText}>Powered by Groq Llama 3.3 AI</Text>
+                    <Text style={styles.aiBadgeText}>Powered by SOTE AI</Text>
                 </View>
             </Animated.View>
         </View>

@@ -319,7 +319,7 @@ export default function HomeScreen({ navigation }) {
                 {/* ── Bottom badge ── */}
                 <LiftBlock delay={560} style={styles.bottomBadge}>
                     <MaterialCommunityIcons name="brain" size={12} color="#C8C8C8" />
-                    <Text style={styles.bottomBadgeText}>Powered by Groq Llama 3.3 AI  •  v{APP_CONFIG.version}</Text>
+                    <Text style={styles.bottomBadgeText}>Powered by SOTE AI  •  v{APP_CONFIG.version}</Text>
                 </LiftBlock>
             </ScrollView>
         </View>

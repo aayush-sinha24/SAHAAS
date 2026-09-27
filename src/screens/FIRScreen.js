@@ -329,7 +329,7 @@ export default function FIRScreen({ navigation, route }) {
                             <Text style={styles.aiInsight}>{fir?.aiInsights}</Text>
                             <View style={styles.aiFooter}>
                                 <MaterialCommunityIcons name="brain" size={11} color="#CCCCCC" />
-                                <Text style={styles.aiFooterText}>Groq AI  •  {fir?.filedAtFormatted}</Text>
+                                <Text style={styles.aiFooterText}>SOTE AI  •  {fir?.filedAtFormatted}</Text>
                             </View>
                         </View>
                     </Animated.View>

@@ -4,7 +4,7 @@ import { APP_CONFIG } from '../constants';
  * Generates a complete FIR object with reference number.
  * Accepts optional platePhotoUri for number plate photo evidence.
  */
-export const generateFIR = (aiData, location, timestamp, answers, videoUri, videoUrl, platePhotoUri) => {
+export const generateFIR = (aiData, location, timestamp, answers, videoUri, videoUrl, platePhotoUri, language) => {
     const refNumber = generateReferenceNumber();
     const now = new Date();
 
@@ -76,6 +76,7 @@ export const generateFIR = (aiData, location, timestamp, answers, videoUri, vide
         // Status
         status: 'GENERATED',
         submittedVia: 'SAHAAS Mobile App v1.0',
+        language: language || 'en',
     };
 };
 

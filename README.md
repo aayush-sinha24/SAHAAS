@@ -1,353 +1,237 @@
-<div align="center">
+# Sahaas - Emergency Incident Response
 
-# 🛡️ Sahaas — साहस
-### *Courage to Act. Technology to Help.*
+Sahaas is a React Native emergency incident reporting prototype that helps a citizen capture incident evidence, collect location and incident context, analyze an incident through SOTE AI, generate a structured FIR-style report, and present emergency-response actions.
 
-**AI-powered emergency incident response — from witness to FIR in under 60 seconds.**
+## Overview
 
-[![React Native](https://img.shields.io/badge/React%20Native-0.81.5-61DAFB?style=for-the-badge&logo=react)](https://reactnative.dev)
-[![Expo](https://img.shields.io/badge/Expo-54.0-000020?style=for-the-badge&logo=expo)](https://expo.dev)
-[![Groq AI](https://img.shields.io/badge/Groq-Llama%203.3%2070B-FF6B35?style=for-the-badge)](https://groq.com)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+Sahaas follows this workflow:
 
-</div>
+Citizen
+  |
+Incident video capture
+  |
+GPS + timestamp
+  |
+Incident questionnaire
+  |
+SOTE AI analysis
+  |
+Structured FIR/report generation
+  |
+Emergency response actions
 
----
-
-## 📌 Problem Statement
-
-Every minute of delay in emergency response costs lives. In India, citizens witnessing accidents, crimes, or fires struggle to report incidents accurately — no geo-tagged evidence, no structured FIR, and no direct integration with emergency services. Existing solutions (112, PCR vans) rely on verbal reports that are often incomplete, leading to slow dispatch and poor legal follow-through. **Sahaas** solves this by letting any citizen capture geotagged video evidence, auto-generate an AI-powered FIR, and dispatch Police, Ambulance, and Fire Brigade — all in under 60 seconds.
-
----
-
-## 🎯 Unique Selling Proposition
-
-> **"Sahaas is the only app that turns a citizen's phone into a complete emergency command center — capturing geo-tagged video evidence, generating a legally valid AI-powered FIR, and dispatching Police, Ambulance, or Fire Brigade with a single tap, all in under 60 seconds."**
-
----
-
-## ✨ Key Features
+## Key Features
 
 | Feature | Description |
 |---|---|
-| 📹 **Geo-tagged Video Capture** | Record incident video with live GPS coordinates & timestamp embedded |
-| 🤖 **AI Incident Analysis** | Groq Llama 3.3 70B classifies incident type, severity, and generates a forensic summary |
-| 📄 **Auto FIR Generation** | Legally formatted First Information Report (PDF) with IPC sections in seconds |
-| 🚨 **One-tap Emergency Dispatch** | Simultaneously calls Police (100), Ambulance (108), or Fire Brigade (101) + sends SMS |
-| 🔗 **Video Evidence Link** | Uploaded video linked directly inside the FIR PDF for legal documentation |
-| 🌐 **Multi-language Support** | Supports English and Hindi (extensible) |
-| 📲 **Offline-resilient** | Fallback FIR generation works even without internet |
+| Incident video capture | Records incident video using the device camera |
+| GPS collection | Captures device location associated with the incident |
+| Timestamped evidence | Associates incident evidence with capture time |
+| Incident questionnaire | Collects injury, vehicle, participant, and incident-description information |
+| SOTE AI analysis | Sends incident information to the configured SOTE AI backend |
+| FIR-style report | Generates a structured incident report and PDF |
+| Video upload | Uploads evidence using the configured Cloudinary service |
+| Emergency actions | Provides configurable police, ambulance, and fire response actions |
+| Multi-language UI | Includes English, Hindi, Telugu, and Gujarati strings |
+| Local fallback | Provides structured local report generation when remote analysis is unavailable |
 
----
+## SOTE AI Integration
 
-## 🏗️ Solution Architecture
+Sahaas integrates with a separate SOTE AI backend.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        CITIZEN (Phone)                       │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-          ┌───────────────▼───────────────┐
-          │         CAPTURE MODULE         │
-          │  expo-camera + expo-location   │
-          │  (Video + GPS + Timestamp)     │
-          └──────────┬──────────┬─────────┘
-                     │          │
-          ┌──────────▼──┐  ┌────▼──────────────┐
-          │  GoFile.io  │  │  Questionnaire     │
-          │Video Storage│  │  Screen            │
-          └──────────┬──┘  └────┬──────────────┘
-                     │          │
-          ┌──────────▼──────────▼──────────────┐
-          │        GROQ AI / LLAMA 3.3 70B      │
-          │  Incident classification + FIR gen  │
-          └─────────────────┬──────────────────┘
-                            │
-          ┌─────────────────▼──────────────────┐
-          │          FIR GENERATOR              │
-          │   PDF with GPS + IPC + Video Link   │
-          └─────────────────┬──────────────────┘
-                            │
-          ┌─────────────────▼──────────────────┐
-          │         DISPATCH SCREEN             │
-          └────┬──────────────┬────────────────┘
-               │              │              │
-        ┌──────▼──┐   ┌───────▼──┐   ┌──────▼──┐
-        │ Police  │   │Ambulance │   │  Fire   │
-        │  PCR 100│   │   108    │   │   101   │
-        │Call+SMS │   │ Call+SMS │   │Call+SMS │
-        └─────────┘   └──────────┘   └─────────┘
-```
+Default endpoint:
+https://soteai.onrender.com
 
----
+The frontend integration is implemented in:
+src/services/soteService.js
 
-## 📱 App Flow
+The integration can:
 
-```
-Home Screen
-    └─► Capture Screen       (Record geo-tagged video)
-            └─► Questionnaire        (Incident type, injuries, vehicle no.)
-                    └─► Analysis Screen      (AI processing animation)
-                            └─► FIR Screen           (View + Download PDF)
-                                    └─► Dispatch Screen   (Call 100 / 108 / 101)
-                                            └─► Call Screen   (Dispatch confirmation)
-```
+1. Send incident metadata and an available video URL to the configured analysis service.
+2. Use the emergency-analysis path when required.
+3. Map the SOTE AI response into the Sahaas reporting flow.
+4. Use local structured fallback logic when remote analysis is unavailable.
 
----
+SOTE AI output is intended for prototype decision support and demonstration. It is not an authoritative legal, medical, police, or emergency-service determination.
 
-## 🛠️ Tech Stack
+## Technology Stack
 
 | Layer | Technology |
 |---|---|
-| **Framework** | React Native 0.81.5 + Expo SDK 54 |
-| **Navigation** | React Navigation v6 (Stack Navigator) |
-| **AI / LLM** | Groq API — Llama 3.3 70B Versatile |
-| **Camera** | expo-camera |
-| **Location** | expo-location (real GPS) |
-| **Video Upload** | GoFile.io (free, reliable CDN) |
-| **PDF Generation** | expo-print + expo-sharing |
-| **SMS Alerts** | Custom SMS service integration |
-| **Animations** | React Native Animated API + expo-linear-gradient |
-| **Icons** | @expo/vector-icons (Ionicons, MaterialCommunity, FontAwesome5) |
+| Mobile framework | React Native 0.81.5 |
+| App platform | Expo SDK 54 |
+| Navigation | React Navigation |
+| Camera | expo-camera |
+| Location | expo-location |
+| File handling | expo-file-system |
+| Video storage | Cloudinary |
+| PDF generation | expo-print |
+| PDF sharing | expo-sharing |
+| Icons | @expo/vector-icons |
+| AI integration | SOTE AI HTTP API |
+| Languages | English, Hindi, Telugu, Gujarati |
 
----
+## Project Structure
 
-## 🚀 Getting Started
+SAHAAS/
+  App.js
+  index.js
+  app.json
+  babel.config.js
+  package.json
+  package-lock.json
+  START_EXPO.bat
+  .env.example
+  src/
+    components/
+      ParticleBackground.js
+    constants/
+      index.js
+    screens/
+      HomeScreen.js
+      CaptureScreen.js
+      QuestionnaireScreen.js
+      AnalysisScreen.js
+      FIRScreen.js
+      DispatchScreen.js
+      CallScreen.js
+    services/
+      emailService.js
+      firService.js
+      pdfService.js
+      smsService.js
+      soteService.js
+      videoUploadService.js
+  assets/
+
+## Getting Started
 
 ### Prerequisites
-- Node.js 18+
-- Expo CLI (`npm install -g expo-cli`)
-- **Expo Go** app installed on your Android/iOS device
-- A Groq API key (free at [console.groq.com](https://console.groq.com))
 
-### Installation
+Install Node.js, npm, and Expo Go on an Android or iOS device.
 
-```bash
-# 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/sahaas.git
-cd sahaas
+### 1. Clone the repository
 
-# 2. Install dependencies
+git clone https://github.com/aayush-sinha24/SAHAAS.git
+cd SAHAAS
+
+### 2. Install dependencies
+
 npm install
 
-# 3. Add your API keys
-# Edit src/constants/index.js and add:
-#   GROQ_API_KEY = 'your_groq_api_key_here'
+### 3. Create local environment configuration
 
-# 4. Start the development server
+Create .env.local from the example:
+
+Copy-Item .env.example .env.local
+
+Then edit .env.local and enter the values required for your local or demo environment.
+
+### 4. Start Expo
+
 npx expo start
 
-# 5. Scan the QR code with Expo Go on your phone
-```
+For a physical device on the same Wi-Fi network:
 
-### Running with Tunnel (for physical devices on different networks)
-```bash
-npx expo start --tunnel
-```
+npx expo start --lan
 
----
+Windows users can also use:
+START_EXPO.bat
 
-## 📦 All Packages & Installation
+## Environment Variables
 
-### Install all dependencies at once
-```bash
-npm install
-```
+The repository contains .env.example with placeholders.
 
-### Or install individually:
+Required configuration includes:
 
-```bash
-# Core React Native & Expo
-npx expo install expo@~54.0.33
-npm install react@19.1.0
-npm install react-native@0.81.5
+EXPO_PUBLIC_SOTE_API_URL
+EXPO_PUBLIC_SOTE_API_KEY
+EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME
+EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+EXPO_PUBLIC_POLICE_PHONE
+EXPO_PUBLIC_AMBULANCE_PHONE
+EXPO_PUBLIC_FIRE_PHONE
+EXPO_PUBLIC_EMAIL_SERVICE_ID
+EXPO_PUBLIC_EMAIL_TEMPLATE_ID
+EXPO_PUBLIC_EMAIL_PUBLIC_KEY
+EXPO_PUBLIC_EMAIL_TO
+EXPO_PUBLIC_SMS_API_KEY
 
-# Navigation
-npm install @react-navigation/native@^6.1.18
-npm install @react-navigation/stack@^6.4.1
-npm install react-native-gesture-handler@~2.28.0
-npm install react-native-screens@~4.16.0
-npm install react-native-safe-area-context@~5.6.0
+## Security
 
-# Expo Modules
-npx expo install expo-camera@~17.0.10
-npx expo install expo-location@~19.0.8
-npx expo install expo-av@~16.0.8
-npx expo install expo-file-system@~19.0.21
-npx expo install expo-image-manipulator@~14.0.8
-npx expo install expo-linear-gradient@~15.0.8
-npx expo install expo-media-library@~18.2.1
-npx expo install expo-print@~15.0.8
-npx expo install expo-sensors@~15.0.8
-npx expo install expo-sharing@~14.0.8
-npx expo install expo-status-bar@~3.0.9
+Do not commit .env.local or other credential-containing files.
 
-# UI & Icons
-npm install @expo/vector-icons@^15.0.3
+The .env.local file is ignored by Git.
 
-# Animations
-npx expo install react-native-reanimated@~3.17.4
-```
+Important: EXPO_PUBLIC_* values are exposed to the client application. They should therefore not be treated as true server-side secrets. A production deployment should place sensitive credentials behind a protected backend.
 
-### Full `package.json` dependencies reference:
-```json
-{
-  "dependencies": {
-    "@expo/vector-icons": "^15.0.3",
-    "@react-navigation/native": "^6.1.18",
-    "@react-navigation/stack": "^6.4.1",
-    "expo": "~54.0.33",
-    "expo-av": "~16.0.8",
-    "expo-camera": "~17.0.10",
-    "expo-file-system": "~19.0.21",
-    "expo-image-manipulator": "~14.0.8",
-    "expo-linear-gradient": "~15.0.8",
-    "expo-location": "~19.0.8",
-    "expo-media-library": "~18.2.1",
-    "expo-print": "~15.0.8",
-    "expo-sensors": "~15.0.8",
-    "expo-sharing": "~14.0.8",
-    "expo-status-bar": "~3.0.9",
-    "react": "19.1.0",
-    "react-native": "0.81.5",
-    "react-native-gesture-handler": "~2.28.0",
-    "react-native-reanimated": "~3.17.4",
-    "react-native-safe-area-context": "~5.6.0",
-    "react-native-screens": "~4.16.0"
-  }
-}
-```
+## Emergency Actions
 
----
+The application contains configurable emergency contact values intended for the prototype/demo workflow.
 
-## 📁 Project Structure
+Before real-world deployment, replace demonstration values with authorized services and appropriate emergency integrations.
 
-```
-sahaas/
-├── App.js                          # Root navigator (7 screens)
-├── index.js                        # Entry point
-├── app.json                        # Expo config
-├── package.json
-└── src/
-    ├── constants/
-    │   └── index.js                # API keys, colors, strings, emergency contacts
-    ├── screens/
-    │   ├── HomeScreen.js           # Landing page with language selection
-    │   ├── CaptureScreen.js        # Video recording with live GPS display
-    │   ├── QuestionnaireScreen.js  # Incident context form
-    │   ├── AnalysisScreen.js       # AI processing + animated steps
-    │   ├── FIRScreen.js            # FIR viewer + PDF download + video player
-    │   ├── DispatchScreen.js       # Emergency dispatch (Police/Ambulance/Fire)
-    │   └── CallScreen.js           # Call confirmation screen
-    └── services/
-        ├── geminiService.js        # Groq Llama 3.3 AI integration + fallback
-        ├── firService.js           # FIR data structure builder
-        ├── pdfService.js           # PDF generation (expo-print)
-        ├── videoUploadService.js   # GoFile.io video upload
-        ├── smsService.js           # Emergency SMS sender
-        └── emailService.js        # Email alert service
-```
+The project should not be treated as an official emergency-service integration unless separately authorized and integrated with the relevant systems.
 
----
+## FIR / Report Generation
 
-## 🤖 AI Analysis Pipeline
+The report-generation logic is separated into:
 
-The AI pipeline uses **Groq's Llama 3.3 70B** for:
+src/services/firService.js
 
-1. **Incident Classification** — Road Accident / Physical Assault / Fire / Medical Emergency / Property Damage
-2. **Severity Assessment** — Critical / High / Medium / Low (rules-based, not hallucinated)
-3. **FIR Content Generation** — Complainant statement, accused details, applicable IPC sections
-4. **Timeline Reconstruction** — Event timeline based on description
-5. **Forensic Insights** — AI confidence score + key observations
+The PDF generation logic is implemented in:
 
-**Fallback Mode**: If the Groq API is unavailable, the app generates a complete FIR locally using structured fallback logic — no data is lost.
+src/services/pdfService.js
 
----
+The generated document is a prototype report. It should not be represented as an officially registered or legally valid FIR without the required police/legal process and authorization.
 
-## 📄 FIR Document Contents
+## Local Fallback
 
-Each auto-generated FIR includes:
+When remote SOTE AI analysis is unavailable, Sahaas can use structured local fallback logic to continue the reporting workflow.
 
-- ✅ FIR Reference Number (e.g., `SAH-HYD-2026-XXXXXX`)
-- ✅ Telangana State Police header
-- ✅ Incident location (address + GPS coordinates)
-- ✅ Date & time
-- ✅ Severity level & incident type
-- ✅ AI confidence score
-- ✅ Complainant statement
-- ✅ Accused details (if available)
-- ✅ Evidence list (geo-tagged video, GPS, timestamp)
-- ✅ Applicable IPC sections
-- ✅ Clickable video evidence link
-- ✅ AI forensic analysis
-- ✅ Responding officer fields
+This supports demonstrations and development but does not replace authoritative emergency or legal systems.
 
----
+## Prototype Limitations
 
-## 🚨 Emergency Dispatch
+Sahaas is a hackathon/prototype application.
 
-Each dispatch tap simultaneously:
-1. **Places a real phone call** (via `Linking.openURL('tel:...')`)
-2. **Sends an SMS alert** with FIR reference number + GPS location
-3. **Navigates to Call Confirmation screen**
+The project demonstrates:
 
-| Service | Number | Action |
-|---|---|---|
-| 🚓 Police + FIR | PCR 100 | Call + SMS + Show FIR |
-| 🚑 Ambulance | 108 EMS | Call + Location SMS |
-| 🚒 Fire Brigade + Ambulance | 101 + 108 | Call both + SMS |
+- incident evidence capture
+- GPS collection
+- timestamped incident data
+- AI-assisted incident analysis
+- structured report generation
+- PDF creation
+- emergency-response workflow
 
----
+The prototype does not guarantee:
 
-## 🔐 Environment Variables
+- AI accuracy
+- official legal validity of generated reports
+- official police registration of an FIR
+- guaranteed emergency dispatch
+- production-grade evidence-chain integrity
+- production-scale availability
 
-Create/edit `src/constants/index.js` and set:
+AI-generated information should be reviewed by an appropriate human authority before operational or legal use.
 
-```js
-export const GROQ_API_KEY = 'your_groq_api_key';
-export const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-export const GROQ_MODEL   = 'llama-3.3-70b-versatile';
-```
+## Development
 
-> ⚠️ **Never commit your API keys to a public repo.** Use environment variables or a `.env` file with `expo-constants` in production.
+The main SOTE AI integration is isolated in:
 
----
+src/services/soteService.js
 
-## 🏆 Hackathon Context
+The analysis screen uses this service to process incident data.
 
-Sahaas was built during a **5-hour hackathon** to solve the real problem of delayed emergency response in India. The app is fully functional — it records real video, calls real emergency numbers, sends real SMS alerts, and generates real PDF FIRs.
+The reporting and PDF-generation paths remain separate from the AI service so that structured fallback processing can be retained.
 
-**Impact metrics:**
-- 🕐 Time to FIR: **90 minutes → under 60 seconds**
-- 📋 Evidence quality: **Verbal → Geo-tagged HD video + AI forensic summary**
-- 📞 Dispatch speed: **Parallel calls + SMS in one tap**
+## Team
 
----
+TEAM_LOGIX
 
-## 👥 Team
+Project: Sahaas
 
-> Built with ❤️ and too much coffee.
+## Status
 
-| Role | Name |
-|---|---|
-| Developer | Aayush |
-| Developer | Aashish |
-| Developer | Sabbir |
-| Developer | Rudraksh |
-| Developer | Shreyas |
-| Developer | Darishma |
-
----
-
-## 📜 License
-
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
-
----
-
-<div align="center">
-
-**Sahaas — साहस**
-*When seconds matter, every tap counts.*
-
-</div>
+This repository contains the public prototype source code prepared for hackathon demonstration and further development.

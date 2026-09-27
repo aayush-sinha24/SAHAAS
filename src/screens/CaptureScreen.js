@@ -10,6 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, STRINGS, APP_CONFIG } from '../constants';
 import ParticleBackground from '../components/ParticleBackground';
 import { uploadVideoToServer } from '../services/videoUploadService';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const { width, height } = Dimensions.get('window');
 const MIN_DURATION = 10;
@@ -221,7 +222,24 @@ export default function CaptureScreen({ navigation, route }) {
         if (!cameraRef.current) return;
         try {
             const photo = await cameraRef.current.takePictureAsync({ quality: 0.9 });
-            setPlatePhotoUri(photo.uri);
+
+            // ── Immediately copy to permanent storage ──────────────────────────
+            // takePictureAsync returns a temp cache URI that can be GC'd before
+            // the PDF is generated (several screens later). Copy to documentDirectory
+            // right now so the URI stays valid for the entire app session.
+            let permanentUri = photo.uri; // fallback to original if copy fails
+            try {
+                const dir = FileSystem.documentDirectory + 'sahaas_evidence/';
+                await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
+                const dest = dir + `plate_${Date.now()}.jpg`;
+                await FileSystem.copyAsync({ from: photo.uri, to: dest });
+                permanentUri = dest;
+                console.log('[Capture] Plate photo saved permanently:', permanentUri);
+            } catch (copyErr) {
+                console.warn('[Capture] Could not copy plate photo, using temp URI:', copyErr.message);
+            }
+
+            setPlatePhotoUri(permanentUri);
             setPhotoMode(false);
             // Animate the thumbnail in
             Animated.spring(platePhotoAnim, { toValue: 1, tension: 50, friction: 8, useNativeDriver: true }).start();
